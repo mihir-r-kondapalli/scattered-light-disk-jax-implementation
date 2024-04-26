@@ -118,6 +118,7 @@ class Dust_distribution(Jax_class):
         if self.type == '2PowerLaws':
             self.dust_distribution_calc = DustEllipticalDistribution2PowerLaws(
                                                     self.accuracy, density_dico)
+            self.dust_cls = DustEllipticalDistribution2PowerLaws
         else:
             errmsg = 'The only dust distribution implemented so far is the' \
                      ' "2PowerLaws"'
@@ -548,8 +549,10 @@ class Phase_function(object):
                 self.polar_polynom = False
         if self.type == 'HG':
             self.phase_function_calc = HenyeyGreenstein_SPF(spf_dico)
+            self.func_cls = HenyeyGreenstein_SPF
         elif self.type == 'DoubleHG':
             self.phase_function_calc = DoubleHenyeyGreenstein_SPF(spf_dico)
+            self.func_cls = DoubleHenyeyGreenstein_SPF
         #elif self.type == 'interpolated':
         #    self.phase_function_calc = Interpolated_SPF(spf_dico)
         else:

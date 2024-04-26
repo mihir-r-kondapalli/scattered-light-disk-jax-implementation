@@ -406,7 +406,7 @@ class ScatteredLightDisk(Jax_class):
         self.tmp = jnp.arange(0, halfNbSlices)
         return ScatteredLightDisk.compute_scattered_light_jax(
             self.pack_pars(self.p_dict),
-            DustEllipticalDistribution2PowerLaws.pack_pars(self.dust_density.dust_distribution_calc.p_dict),
-            DustEllipticalDistribution2PowerLaws, HenyeyGreenstein_SPF.pack_pars(self.phase_function.phase_function_calc.p_dict),
-            HenyeyGreenstein_SPF, self.x_vector, self.y_vector, self.scattered_light_map, self.limage, self.image,
+            self.dust_density.dust_cls.pack_pars(self.dust_density.dust_distribution_calc.p_dict),
+            self.dust_density.dust_cls, self.phase_function.func_cls.pack_pars(self.phase_function.phase_function_calc.p_dict),
+            self.phase_function.func_cls, self.x_vector, self.y_vector, self.scattered_light_map, self.limage, self.image,
             self.tmp, self.p_dict["nx"], self.p_dict["ny"])
