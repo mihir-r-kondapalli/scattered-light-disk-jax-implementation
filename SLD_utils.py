@@ -696,6 +696,7 @@ class HenyeyGreenstein_SPF(Jax_class):
             must be calculated.
         """
         p_dict = cls.unpack_pars(phase_func_params)
+        
         return 1./(4*jnp.pi)*(1-p_dict["g"]**2) / \
             (1+p_dict["g"]**2-2*p_dict["g"]*cos_phi)**(3./2.)
 
@@ -712,9 +713,14 @@ class DoubleHenyeyGreenstein_SPF(Jax_class):
     Greenstein function.
     """
 
+    param_names = {'g1': 0.5, 'g2': -0.3, 'weight': 0.7}
+
     def __init__(self, spf_dico={'g': [0.5, -0.3], 'weight': 0.7}):
         """
         """
+
+        self.p_dict = {}
+
         # it must contain the key "g"
         if 'g' not in spf_dico.keys():
             raise TypeError('The dictionnary describing a Heyney Greenstein'
@@ -743,6 +749,9 @@ class DoubleHenyeyGreenstein_SPF(Jax_class):
                             ' number of elements')
         self.g = spf_dico['g']
         self.weight = spf_dico['weight']
+        self.p_dict['g1'] = spf_dico['g'][0]
+        self.p_dict['g2'] = spf_dico['g'][1]
+        self.p_dict['weight'] = spf_dico['weight']
 
     def print_info(self):
         """
@@ -768,25 +777,10 @@ class DoubleHenyeyGreenstein_SPF(Jax_class):
             must be calculated.
         """
         return 1./(4*np.pi)*(1-g**2)/(1+g**2-2*g*cos_phi)**(3./2.)
-
-    def compute_phase_function_from_cosphi(self, cos_phi):
-        """
-        Compute the phase function at (a) specific scattering scattering
-        angle(s) phi. The argument is not phi but cos(phi) for optimization
-        reasons.
-
-        Parameters
-        ----------
-        cos_phi : float or array
-            cosine of the scattering angle(s) at which the scattering function
-            must be calculated.
-        """
-        return self.weight * self.compute_singleHG_from_cosphi(self.g[0],
-                                                               cos_phi) + \
-            (1-self.weight) * self.compute_singleHG_from_cosphi(self.g[1],
-                                                                cos_phi)
     
-    def compute_phase_function_from_cosphi(self, cos_phi):
+    @classmethod
+    @partial(jax.jit, static_argnums=(0,))
+    def compute_phase_function_from_cosphi(cls, phase_func_params, cos_phi):
         """
         Compute the phase function at (a) specific scattering scattering
         angle(s) phi. The argument is not phi but cos(phi) for optimization
@@ -798,7 +792,12 @@ class DoubleHenyeyGreenstein_SPF(Jax_class):
             cosine of the scattering angle(s) at which the scattering function
             must be calculated.
         """
-        return self.weight * self.compute_singleHG_from_cosphi(self.g[0],
-                                                               cos_phi) + \
-            (1-self.weight) * self.compute_singleHG_from_cosphi(self.g[1],
-                                                                cos_phi)
+
+        p_dict = cls.unpack_pars(phase_func_params)
+
+        hg1 = p_dict['weight'] * 1./(4*jnp.pi)*(1-p_dict["g1"]**2) / \
+            (1+p_dict["g1"]**2-2*p_dict["g1"]*cos_phi)**(3./2.)
+        hg2 = (1-p_dict['weight']) * 1./(4*jnp.pi)*(1-p_dict["g2"]**2) / \
+            (1+p_dict["g2"]**2-2*p_dict["g2"]*cos_phi)**(3./2.)
+        
+        return hg1+hg2

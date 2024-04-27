@@ -383,7 +383,6 @@ class ScatteredLightDisk(Jax_class):
             rho_vector = distr_cls.density_cylindrical(distr_params, r_vector,
                                                                costheta_vector,
                                                                zd_vector)
-            
             phase_function = phase_func_cls.compute_phase_function_from_cosphi(phase_func_params, cosphi_vector)
             #image = np.ndarray((disk["ny"], disk["nx"]))
             image = jnp.where(validPixel_map, rho_vector*phase_function/d2star_vector, 0)
@@ -398,12 +397,14 @@ class ScatteredLightDisk(Jax_class):
         if disk["flux_max"] is not None:
             scattered_light_map = scattered_light_map * (disk["flux_max"] /
                                          jnp.nanmax(scattered_light_map))
+            
         return scattered_light_map
     
     def compute_scattered_light(self, halfNbSlices=25):
         self.check_inclination()
         self.limage = jnp.zeros([2*halfNbSlices-1, self.p_dict["ny"], self.p_dict["nx"]])
         self.tmp = jnp.arange(0, halfNbSlices)
+
         return ScatteredLightDisk.compute_scattered_light_jax(
             self.pack_pars(self.p_dict),
             self.dust_density.dust_cls.pack_pars(self.dust_density.dust_distribution_calc.p_dict),
